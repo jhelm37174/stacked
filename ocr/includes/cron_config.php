@@ -5,6 +5,38 @@
  */
 
 
+//detect page script
+$metatime         = 10000;
+$script =  basename($_SERVER['PHP_SELF']);
+if($script == "cron_readmail.php")
+{
+    $metatime = 10;
+}
+elseif($script == "cron_prepimages.php")
+{
+    $metatime = 10;
+}
+elseif($script == "cron_extract.php")
+{
+    $metatime = 10;
+}
+elseif($script == "cron_getjson.php")
+{
+    $metatime = 10;
+}
+elseif($script == "cron_sendcsv.php")
+{
+    $metatime = 600;
+}
+elseif($script == "cron_archive.php")
+{
+    $metatime = 600;
+}
+else
+{
+    $metatime = 1000;
+}
+
             //VPS Server
                 $mssql_servername = "88.202.190.13";
                 $mssql_username   = "dygityze_dbuser";
@@ -20,7 +52,6 @@
                 $mssql_dbname     = "stacked";
                 $basepath         = 'http://localhost/stacked/ocr/';
                 $metarefresh      = true;
-                $metatime         = 10;
                 $sendmail         = true;
 
 
@@ -36,7 +67,7 @@
 
 
                 //testing
-                $destinationmail  = "jamiehelm@hotmail.com";
+                $destinationmail  = "Gavinp.byrne1@gmail.com";
                 $bccmail          = "jamiehelm@hotmail.com";
                 $failmail         = "jamiehelm@hotmail.com";
                 $mailfrom         = "autoinvoice@stacked.com";

@@ -166,16 +166,19 @@ function getjson($text,$dbconnobj)
             $linenettotal = 0;
             $strippedtext = preg_replace( '/[^A-z0-9\s.\r\n]/', '', $text[0]['extract']);
             $lineitemsarray = explode("\n",$strippedtext);
+            //var_dump($lineitemsarray);
             foreach($lineitemsarray AS $key => $value)
             {
                 if (substr($value,0,4) == "CPC1")
                 {
                     //echo("is line item");
+                    //var_dump($value);
                     $thisline = $value;
                     $thisline = preg_replace("/\h+/",' ',$thisline);
                     //we only want description and line net
                     //line net first
-                    $linenet = preg_match_all('/\d{1,5}.\d{2}/', $thisline, $thislinenumbers);
+                    $linenet = preg_match_all('/\d{1,5}.\d{1,3}/', $thisline, $thislinenumbers);
+                    //var_dump($thislinenumbers);
                     $linenet = $lastnum = end($thislinenumbers[0]);
                     //description
                     $thisline = $value;

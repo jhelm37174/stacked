@@ -53,7 +53,7 @@ if($status > 0)
     $validinvoices = $dbconn->getValidInvoices();
     $linecounter = 0;
     $invoicecounter = 0;
-    $custrefarray = array();
+    $custaccarray = array();
 
             //generate CSV
             foreach($validinvoices AS $key => $value)
@@ -68,15 +68,15 @@ if($status > 0)
                 {
 
                     //customer reference one
-                    $custrefarray[$linecounter][0] = 'PINV';
-                    $custrefarray[$linecounter][1] = $invoicearray['customerreference'];
-                    $custrefarray[$linecounter][2] = '677000';
-                    $custrefarray[$linecounter][3] = $invoicearray['invoice_date'];
-                    $custrefarray[$linecounter][4] = $invoicearray['invoice_number'];
-                    $custrefarray[$linecounter][5] = $ivalue['line_desc'];
-                    $custrefarray[$linecounter][6] = $ivalue['line_net'];
-                    $custrefarray[$linecounter][7] = 'S';
-                    $custrefarray[$linecounter][8] = $ivalue['line_vat'];
+                    $custaccarray[$linecounter][0] = 'PINV';
+                    $custaccarray[$linecounter][1] = $invoicearray['account'];
+                    $custaccarray[$linecounter][2] = '677000';
+                    $custaccarray[$linecounter][3] = $invoicearray['invoice_date'];
+                    $custaccarray[$linecounter][4] = $invoicearray['invoice_number'];
+                    $custaccarray[$linecounter][5] = $ivalue['line_desc'];
+                    $custaccarray[$linecounter][6] = $ivalue['line_net'];
+                    $custaccarray[$linecounter][7] = 'S';
+                    $custaccarray[$linecounter][8] = $ivalue['line_vat'];
 
                     
 
@@ -93,13 +93,13 @@ if($status > 0)
             }
 
             //generate csv file
-            if(count($custrefarray) > 0)
+            if(count($custaccarray) > 0)
             {
 
 
                     ob_start();
                     $fp = fopen('php://output', 'w');
-                    foreach ($custrefarray as $key => $value)
+                    foreach ($custaccarray as $key => $value)
                         {
                             fputcsv($fp, $value);
                         }
@@ -122,14 +122,14 @@ if($status > 0)
                     $mail->setFrom($mailfrom);
                     //$mail->addBcc($csv2pdf_emailbcc, 'CSV2PDF BCC');
                     $mail->AltBody = 'Please use a mail client which supports HTML';
-                    $mail->addStringAttachment($approved_string, 'cust_ref_valid_invoices.csv');
+                    $mail->addStringAttachment($approved_string, 'acc_valid_invoices.csv');
 
                     echo("\n<br><br>--A total of " . $invoicecounter . " invoices have been approved</br>");
 
-                    $bodymessage = "<p>Please see attached the EDI CSV for invoices received from Dygitized</p>";
+                    $bodymessage = "<p>Please see attached the EDI CSV for invoices received from Dygitized grouped by Account</p>";
                         $mail->addAddress($destinationmail, 'Dygitized Alerts'); 
                         $mail->AddCC($bccmail, 'Backup BCC');
-                        $mail->Subject = $invoicecounter  . " Approved Invoices received from Dygitized";
+                        $mail->Subject = $invoicecounter  . " Approved Invoices by Account received from Dygitized";
                         $mail->Body    = $bodymessage;
                     if($sendmail == true)
                     {
@@ -149,7 +149,7 @@ if($status > 0)
     $invalidinvoices = $dbconn->getInvalidInvoices();
     $linecounter = 0;
     $invoicecounter = 0;
-    $custrefarray = array();
+    $custaccarray = array();
 
             //generate CSV
             foreach($invalidinvoices AS $key => $value)
@@ -164,15 +164,15 @@ if($status > 0)
                 {
 
                     //customer reference one
-                    $custrefarray[$linecounter][0] = 'PINV';
-                    $custrefarray[$linecounter][1] = $invoicearray['customerreference'];
-                    $custrefarray[$linecounter][2] = '677000';
-                    $custrefarray[$linecounter][3] = $invoicearray['invoice_date'];
-                    $custrefarray[$linecounter][4] = $invoicearray['invoice_number'];
-                    $custrefarray[$linecounter][5] = $ivalue['line_desc'];
-                    $custrefarray[$linecounter][6] = $ivalue['line_net'];
-                    $custrefarray[$linecounter][7] = 'S';
-                    $custrefarray[$linecounter][8] = $ivalue['line_vat'];                    
+                    $custaccarray[$linecounter][0] = 'PINV';
+                    $custaccarray[$linecounter][1] = $invoicearray['account'];
+                    $custaccarray[$linecounter][2] = '677000';
+                    $custaccarray[$linecounter][3] = $invoicearray['invoice_date'];
+                    $custaccarray[$linecounter][4] = $invoicearray['invoice_number'];
+                    $custaccarray[$linecounter][5] = $ivalue['line_desc'];
+                    $custaccarray[$linecounter][6] = $ivalue['line_net'];
+                    $custaccarray[$linecounter][7] = 'S';
+                    $custaccarray[$linecounter][8] = $ivalue['line_vat'];                    
 
                     $linecounter ++;
 
@@ -187,13 +187,13 @@ if($status > 0)
             }
 
             //generate csv file
-            if(count($custrefarray) > 0)
+            if(count($custaccarray) > 0)
             {
 
 
                     ob_start();
                     $fp = fopen('php://output', 'w');
-                    foreach ($custrefarray as $key => $value)
+                    foreach ($custaccarray as $key => $value)
                         {
                             fputcsv($fp, $value);
                         }
@@ -216,14 +216,14 @@ if($status > 0)
                     $mail->setFrom($mailfrom);
                     //$mail->addBcc($csv2pdf_emailbcc, 'CSV2PDF BCC');
                     $mail->AltBody = 'Please use a mail client which supports HTML';
-                    $mail->addStringAttachment($approved_string, 'cust_ref_invalid_invoices.csv');
+                    $mail->addStringAttachment($approved_string, 'acc_invalid_invoices.csv');
 
                     echo("\n<br><br>--A total of " . $invoicecounter . " invoices have been REJECTED</br>");
 
-                    $bodymessage = "<p>Please see attached the EDI CSV for REJECTED invoices received from Dygitized</p>";
+                    $bodymessage = "<p>Please see attached the EDI CSV for REJECTED invoices received from Dygitized grouped by Account</p>";
                         $mail->addAddress($destinationmail, 'Dygitized Alerts'); 
                         $mail->AddCC($bccmail, 'Backup BCC');
-                        $mail->Subject = $invoicecounter  . " rejected Invoices received from Dygitized";
+                        $mail->Subject = $invoicecounter  . " rejected Invoices by Account received from Dygitized";
                         $mail->Body    = $bodymessage;
                     if($sendmail == true)
                     {
