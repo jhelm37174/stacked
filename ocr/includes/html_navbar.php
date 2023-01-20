@@ -29,6 +29,17 @@
           <i class="fa fa-play"></i> Invoice Extract Cron <span class="sr-only">(current)</span></a>
       </li>
 
+      <li class="nav-item active">
+        <a class="nav-link mainmenu" href="./cron_sendcsv.php">
+          <i class="fa fa-play"></i> Send CSV <span class="sr-only">(current)</span></a>
+      </li>
+
+      <li class="nav-item active">
+        <a class="nav-link mainmenu" href="./cron_archive.php">
+          <i class="fa fa-play"></i> Archive Exports <span class="sr-only">(current)</span></a>
+      </li>
+
+
     </ul>
 
                            

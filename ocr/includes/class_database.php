@@ -116,6 +116,16 @@ Class database
             return true;
         }
 
+        /**
+         * Set the invoice extract status code, used when bulk exporting for email.
+         */
+        public function setTxnInvoiceExtractStatus($txnid,$statuscode)
+        {
+            $stmt = $this->connection->prepare("UPDATE tbl_txn SET invoiceextractstatus = ? WHERE txnid = ?");           
+            $stmt->bind_param("ss", $statuscode,$txnid);
+            $stmt->execute();
+            return true;
+        }
 
         public function getTxnCountByStatus($status)
         {
@@ -170,19 +180,85 @@ Class database
         }
 
 
+        public function setSaveJson($txnid,$json)
+        {
+            $stmt = $this->connection->prepare(" UPDATE tbl_txn SET json = ?  WHERE txnid = ? ");           
+            $stmt->bind_param("ss", $json,$txnid);
+            $stmt->execute();
+            $rowid = $stmt->insert_id;
+            return $rowid; 
+        }
+
         public function getPendingExtract()
         {
-            $stmt = $this->connection->prepare(" SELECT txnid,extract FROM tbl_txn ORDER BY txnid ASC LIMIT 0,1");           
+            $stmt = $this->connection->prepare(" SELECT txnid,extract FROM tbl_txn WHERE status = 2 ORDER BY txnid ASC LIMIT 0,1");           
             $stmt->execute();
             $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); 
             return $result;
-        }       
+        }  
 
 
+        public function getDuplicateCount($invoiceno)
+        {
+            $stmt = $this->connection->prepare(" SELECT count(invoiceid) AS totalcount FROM tbl_invoicenumbers WHERE invoicenumber LIKE ?  ");
+            $stmt->bind_param("s", $invoiceno);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc(); 
+            return $result;
+        }     
 
 
+        public function setNewInvoiceNumber($invoiceno)
+        {
+            //Create transaction record first
+            $stmt = $this->connection->prepare( " INSERT INTO tbl_invoicenumbers (invoicenumber) VALUES (?)");           
+            $stmt->bind_param("s", $invoiceno);
+            $stmt->execute();
+            $rowid = $stmt->insert_id;
+            return $rowid;  
+        }
+
+        public function getValidInvoices()
+        {
+            $stmt = $this->connection->prepare(" SELECT txnid,json FROM tbl_txn WHERE status = 3 AND invoiceextractstatus = 100 ORDER BY txnid ASC ");           
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); 
+            return $result;            
+        }
 
 
+        public function getInvalidInvoices()
+        {
+            $stmt = $this->connection->prepare(" SELECT txnid,json FROM tbl_txn WHERE status = 3 AND invoiceextractstatus != 100 ORDER BY txnid ASC ");           
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); 
+            return $result;            
+        }
+
+        public function getInvoicesForArchive()
+        {
+            $stmt = $this->connection->prepare(" SELECT * FROM tbl_txn WHERE status = 4 ORDER BY txnid ASC ");           
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); 
+            return $result;              
+        }
+
+        public function setInvoiceArchive($txnid, $docname, $docstring, $imgstring, $imgsize, $extract, $json, $status, $invoiceextractstatus, $docdate)
+        {
+            $stmt = $this->connection->prepare( " INSERT INTO tbl_archive (txnid, docname, docstring, imgstring, imgsize, extract, json, status, invoiceextractstatus, docdate)  VALUES (?,?,?,?,?,?,?,?,?,?)");           
+            $stmt->bind_param("ssssssssss", $txnid, $docname, $docstring, $imgstring, $imgsize, $extract, $json, $status, $invoiceextractstatus, $docdate);
+            $stmt->execute();
+            $rowid = $stmt->insert_id;
+            return $rowid;            
+        }
+
+        public function setDeleteInvoice($txnid)
+        {
+            $stmt = $this->connection->prepare("DELETE FROM tbl_txn WHERE txnid = ? ");
+            $stmt->bind_param("s",$txnid);
+            $stmt->execute();
+            $result = $stmt->get_result(); 
+        }
 
 
 

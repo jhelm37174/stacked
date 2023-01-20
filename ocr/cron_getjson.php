@@ -35,10 +35,29 @@ if($status > 0)
     $status = $dbconn->setSystemStatus(4,400);
     echo("\n<br><br><div class='alert alert-success'>");
     
-    $text = $dbconn->getPendingExtract();    
-    $json = getjson($text);
+    $text = $dbconn->getPendingExtract();
+    //var_dump($text);    
+    
+    if(empty($text))
+    {
+        echo("\n<br>--no transaction to process");
+    }
+    else
+    {
+        $json = getjson($text,$dbconn);
 
-    var_dump($json);
+        echo("Invoice number " . $json['invoice_number'] . " has been processed");
+
+        //var_dump($json);
+        $json = json_encode($json);
+
+        //save json
+        $savedjson = $dbconn->setSaveJson($text[0]['txnid'],$json);
+
+        //update txn status to show json done
+        $update = $dbconn->setTxnStatus($text[0]['txnid'],3);
+    }
+
 
 
     echo("</div>");
@@ -48,14 +67,14 @@ if($status > 0)
 }
 else
 {
-    echo("\JSON extract process already underway. Skipping this round.\n");
+    echo("JSON extract process already underway. Skipping this round.\n");
 }
 
 
 
 
 
-function getjson($text)
+function getjson($text,$dbconnobj)
 {
     //What we need:
     //
@@ -76,18 +95,34 @@ function getjson($text)
     //Invoice Date
             $invoicedatepattern = "/Invoice Date\h*\d{2}\/\d{2}\/\d{2}/i";
             $invoicedatestring = preg_match($invoicedatepattern, $text[0]['extract'],$invoicedatematches);
-            $invoicedatestring = $invoicedatematches[0];
-            $invoicedatestring = str_replace('Invoice Date','',$invoicedatestring);
-            $invoicedatestring = preg_replace("/\h*/",'',$invoicedatestring);
-            $array['invoice_date'] = $invoicedatestring;
+            if(isset($invoicedatematches[0]))
+            {
+                $invoicedatestring = $invoicedatematches[0];
+                $invoicedatestring = str_replace('Invoice Date','',$invoicedatestring);
+                $invoicedatestring = preg_replace("/\h*/",'',$invoicedatestring);
+                $array['invoice_date'] = $invoicedatestring;                
+            }
+            else
+            {
+                $array['invoice_date'] = null;  
+            }
+
 
     //Invoice Date
             $invoicenumberpattern = "/Invoice No\h*\d{0,8}/i";
             $invoicenumberstring = preg_match($invoicenumberpattern, $text[0]['extract'],$invoicenumbermatches);
-            $invoicenumberstring = $invoicenumbermatches[0];
-            $invoicenumberstring = str_replace('Invoice No','',$invoicenumberstring);
-            $invoicenumberstring = preg_replace("/\h*/",'',$invoicenumberstring);
-            $array['invoice_number'] = $invoicenumberstring;
+            if(isset($invoicenumbermatches[0]))
+            {            
+                $invoicenumberstring = $invoicenumbermatches[0];
+                $invoicenumberstring = str_replace('Invoice No','',$invoicenumberstring);
+                $invoicenumberstring = preg_replace("/\h*/",'',$invoicenumberstring);
+                $array['invoice_number'] = $invoicenumberstring;
+            }
+            else
+            {
+                $array['invoice_number'] = null;  
+            }
+
 
     //Invoice Net
             //remove all junk from text 
@@ -98,11 +133,13 @@ function getjson($text)
             $invoicenetstring = str_replace('Goods','',$invoicenetstring);
             $invoicenetstring = preg_replace("/\h*/",'',$invoicenetstring);
             $array['invoice_net'] = $invoicenetstring;
-            echo($strippedtext);
+            //echo($strippedtext);
 
     
     //Customer Account number and Invoice Number (same line)
             //find entry which starts 'Customer Reference'
+            $array['account'] = null;
+            $array['customerreference'] = null;
             $titlearray = preg_grep('/^Customer Reference\h*Account.*/', $linearray);
             foreach($titlearray AS $key => $value)
             {
@@ -133,7 +170,7 @@ function getjson($text)
             {
                 if (substr($value,0,4) == "CPC1")
                 {
-                    echo("is line item");
+                    //echo("is line item");
                     $thisline = $value;
                     $thisline = preg_replace("/\h+/",' ',$thisline);
                     //we only want description and line net
@@ -149,7 +186,10 @@ function getjson($text)
                     //update array
                     $array['line_net_total'] = $linenettotal;
                     $array['line_items'][$linecounter]['line_net'] = $linenet;
-                    $array['line_items'][$linecounter]['line_desc'] = $linedesc;                    
+                    $array['line_items'][$linecounter]['line_desc'] = $linedesc;
+                    //add line VAT
+                    $linevat = round(($linenet * 0.23),2);
+                    $array['line_items'][$linecounter]['line_vat'] = $linevat;
                     //update line counter
                     $linecounter ++;
                 }
@@ -157,8 +197,79 @@ function getjson($text)
 
 
     //validation checks
+            //need to check that everyhting extracted properly and give appropriate status code.
+            $invoicevalid = true;
+
+            //check date
+            if($array['invoice_date'] == null)
+            {
+                $invoicevalid = false;
+                $txnstatuscode = 10;
+                $insert = $dbconnobj->setTxnInvoiceExtractStatus($text[0]['txnid'],$txnstatuscode);
+            }
+
+            if($array['invoice_number'] == null)
+            {
+                $invoicevalid = false;
+                $txnstatuscode = 20;
+                $insert = $dbconnobj->setTxnInvoiceExtractStatus($text[0]['txnid'],$txnstatuscode);
+            }
+
+            if($array['customerreference'] == null)
+            {
+                $invoicevalid = false;
+                $txnstatuscode = 30;
+                $insert = $dbconnobj->setTxnInvoiceExtractStatus($text[0]['txnid'],$txnstatuscode);
+            }
             
-   
+            if($array['account'] == null)
+            {
+                $invoicevalid = false;
+                $txnstatuscode = 40;
+                $insert = $dbconnobj->setTxnInvoiceExtractStatus($text[0]['txnid'],$txnstatuscode);
+            }
+
+            $linenettotal = number_format($linenettotal, 2, '.', '');
+            $invoicenet = number_format($invoicenetstring, 2, '.', '');
+
+            if((float)$invoicenet !== (float)$linenettotal)
+            {
+                $invoicevalid = false;
+                $txnstatuscode = 50;
+                $insert = $dbconnobj->setTxnInvoiceExtractStatus($text[0]['txnid'],$txnstatuscode);                
+            }
+
+            //check to see if has been processed before
+            $duplicatecount = $dbconnobj->getDuplicateCount($invoicenumberstring);
+            //var_dump($duplicatecount);
+            //echo("Duplicate count is " . $duplicatecount['totalcount']);
+            if($duplicatecount['totalcount'] > 0)
+            {
+                $invoicevalid = false;
+                $txnstatuscode = 60;
+                $insert = $dbconnobj->setTxnInvoiceExtractStatus($text[0]['txnid'],$txnstatuscode);                
+            } 
+
+            //if not null, add this invoice id to the records
+            if($invoicenumberstring !== null && $duplicatecount['totalcount'] == 0)
+            {
+                $insert = $dbconnobj->setNewInvoiceNumber($invoicenumberstring); 
+            }
+                
+
+
+
+            //now if true, change status
+            if($invoicevalid == true)
+            {
+                $array['extract_status'] = 100;
+                $insert = $dbconnobj->setTxnInvoiceExtractStatus($text[0]['txnid'],100); 
+            }
+            else
+            {
+                $array['extract_status'] = $txnstatuscode;
+            }
+
 
     return $array;
 
@@ -166,9 +277,3 @@ function getjson($text)
 }
 
 ?>
-        $anarray[$key][0] = 'PINV';
-        $anarray[$key][1] = $customeraccountno;
-        $anarray[$key][2] = '677000';
-        $anarray[$key][3] = $invoicedate;
-        $anarray[$key][4] = $invoicenumber;
-        $anarray[$key][7] = 'S';
