@@ -150,11 +150,14 @@ if($status > 0)
     $linecounter = 0;
     $invoicecounter = 0;
     $custaccarray = array();
+    $errormessage = "";
 
             //generate CSV
             foreach($invalidinvoices AS $key => $value)
             {
                 $json = $value['json'];
+                $docname = $value['docname'];
+                $errorcode = $value['invoiceextractstatus'];
                 $invoicearray = json_decode($json,true);
 
                 $invoicearraylineitems = $invoicearray['line_items'];
@@ -180,7 +183,40 @@ if($status > 0)
 
                 echo("\n<br>-Invoice Number " . $invoicearray['invoice_number'] . " has been processed");
 
+                if($errorcode == 10)
+                {
+                    $errorcodestring = " 'No Invoice Date found'";
+                }
+                elseif($errorcode == 20)
+                {
+                    $errorcodestring = " 'No Invoice Number found'";
+                }
+                elseif($errorcode == 30)
+                {
+                    $errorcodestring = " 'No customer reference found'";
+                }   
+                elseif($errorcode == 40)
+                {
+                    $errorcodestring = " 'No account number found'";
+                }   
+                elseif($errorcode == 50)
+                {
+                    $errorcodestring = " 'Invoice Net and Line Net does not equate'";
+                }   
+                elseif($errorcode == 60)
+                {
+                    $errorcodestring = " 'Duplicate Invoice Number'";
+                }
+                else
+                {
+                    $errorcodestring = " 'Unknown error - please contact support'";
+                }                       
+
+                $errormessage .= "\n<br><br>-- Document " . $docname . " could not be processed with error  " . $errorcodestring;
+
                 $update = $dbconn->setTxnStatus($txnid,4);
+
+                
 
                 $invoicecounter ++;
 
@@ -220,7 +256,7 @@ if($status > 0)
 
                     echo("\n<br><br>--A total of " . $invoicecounter . " invoices have been REJECTED</br>");
 
-                    $bodymessage = "<p>Please see attached the EDI CSV for REJECTED invoices received from Dygitized grouped by Account</p>";
+                    $bodymessage = "<p>Please see attached the EDI CSV for REJECTED invoices received from Dygitized grouped by Account</p>" . $errormessage;
                         $mail->addAddress($destinationmail, 'Dygitized Alerts'); 
                         $mail->AddCC($bccmail, 'Backup BCC');
                         $mail->Subject = $invoicecounter  . " rejected Invoices by Account received from Dygitized";

@@ -229,7 +229,7 @@ Class database
 
         public function getInvalidInvoices()
         {
-            $stmt = $this->connection->prepare(" SELECT txnid,json FROM tbl_txn WHERE status = 3 AND invoiceextractstatus != 100 ORDER BY txnid ASC ");           
+            $stmt = $this->connection->prepare(" SELECT txnid,json,docname,invoiceextractstatus FROM tbl_txn WHERE status = 3 AND invoiceextractstatus != 100 ORDER BY txnid ASC ");           
             $stmt->execute();
             $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); 
             return $result;            
@@ -260,11 +260,33 @@ Class database
             $result = $stmt->get_result(); 
         }
 
+        public function getAllTxn()
+        {
+            $stmt = $this->connection->prepare(" SELECT txnid,json,docname,invoiceextractstatus,status FROM tbl_txn ORDER BY txnid ASC ");           
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); 
+            return $result;   
+        }
 
 
+        public function getAllArchive($startpage,$results)
+        {
+            $stmt = $this->connection->prepare(" SELECT txnid,json,docname,invoiceextractstatus FROM tbl_archive ORDER BY txnid ASC LIMIT ?,?");           
+            $offset = ($startpage * $results) - $results; 
+            $stmt->bind_param("ss",$offset,$results);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); 
+            return $result;   
+        }
 
 
-
+        public function getAllArchiveCount()
+        {
+            $stmt = $this->connection->prepare(" SELECT count(txnid) FROM tbl_archive ");           
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_all(); 
+            return $result;   
+        }
 
 
 

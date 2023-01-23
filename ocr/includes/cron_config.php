@@ -34,7 +34,7 @@ elseif($script == "cron_archive.php")
 }
 else
 {
-    $metatime = 1000;
+    $metatime = 10;
 }
 
             //VPS Server
@@ -68,6 +68,7 @@ else
 
                 //testing
                 $destinationmail  = "Gavinp.byrne1@gmail.com";
+                $destinationmail  = "jamiehelm@hotmail.com";
                 $bccmail          = "jamiehelm@hotmail.com";
                 $failmail         = "jamiehelm@hotmail.com";
                 $mailfrom         = "autoinvoice@stacked.com";
