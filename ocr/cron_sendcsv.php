@@ -257,7 +257,7 @@ if($status > 0)
                     echo("\n<br><br>--A total of " . $invoicecounter . " invoices have been REJECTED</br>");
 
                     $bodymessage = "<p>Please see attached the EDI CSV for REJECTED invoices received from Dygitized grouped by Account</p>" . $errormessage;
-                        $mail->addAddress($destinationmail, 'Dygitized Alerts'); 
+                        $mail->addAddress($failmail, 'Dygitized Alerts'); 
                         $mail->AddCC($bccmail, 'Backup BCC');
                         $mail->Subject = $invoicecounter  . " rejected Invoices by Account received from Dygitized";
                         $mail->Body    = $bodymessage;

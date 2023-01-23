@@ -8,35 +8,40 @@
 
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav">
-      
+
+      <li class="nav-item active">
+        <a class="nav-link mainmenu" href="./index.php">
+          <i class="fa fa-play"></i> Status Page <span class="sr-only">(current)</span></a>
+      </li>
+
       <li class="nav-item active">
         <a class="nav-link mainmenu" href="./cron_readmail.php">
-          <i class="fa fa-play"></i> Mail Cron <span class="sr-only">(current)</span></a>
+          <i class="fa fa-envelope-o" aria-hidden="true"></i> Mail Cron <span class="sr-only">(current)</span></a>
       </li>
 
       <li class="nav-item active">
         <a class="nav-link mainmenu" href="./cron_prepimages.php">
-          <i class="fa fa-play"></i> Image Cron <span class="sr-only">(current)</span></a>
+          <i class="fa fa-file-image-o" aria-hidden="true"></i> Image Cron <span class="sr-only">(current)</span></a>
       </li>
 
       <li class="nav-item active">
         <a class="nav-link mainmenu" href="./cron_extract.php">
-          <i class="fa fa-play"></i> OCR Extract Cron <span class="sr-only">(current)</span></a>
+          <i class="fa fa-file-text-o" aria-hidden="true"></i> OCR Extract Cron <span class="sr-only">(current)</span></a>
       </li>
 
       <li class="nav-item active">
         <a class="nav-link mainmenu" href="./cron_getjson.php">
-          <i class="fa fa-play"></i> Invoice Extract Cron <span class="sr-only">(current)</span></a>
+          <i class="fa fa-cog" aria-hidden="true"></i> Invoice Extract Cron <span class="sr-only">(current)</span></a>
       </li>
 
       <li class="nav-item active">
         <a class="nav-link mainmenu" href="./cron_sendcsv.php">
-          <i class="fa fa-play"></i> Send CSV <span class="sr-only">(current)</span></a>
+          <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send CSV <span class="sr-only">(current)</span></a>
       </li>
 
       <li class="nav-item active">
         <a class="nav-link mainmenu" href="./cron_archive.php">
-          <i class="fa fa-play"></i> Archive Exports <span class="sr-only">(current)</span></a>
+          <i class="fa fa-archive" aria-hidden="true"></i> Archive Exports <span class="sr-only">(current)</span></a>
       </li>
 
 
